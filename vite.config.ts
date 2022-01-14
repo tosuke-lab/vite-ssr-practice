@@ -13,7 +13,9 @@ export default defineConfig((env) => {
     ssr: {
       noExternal: !dev,
     },
-    resolve: {},
+    resolve: {
+      alias: [{ find: "stream", replacement: "/polyfill/stream" }],
+    },
   });
 
   return config;
