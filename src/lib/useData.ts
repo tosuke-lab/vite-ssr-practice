@@ -1,4 +1,16 @@
-const cache = new Map<string, Promise<unknown> | { data: unknown }>();
+import React from "react";
+
+export type CacheType = Map<string, Promise<unknown> | { data: unknown }>;
+
+let cache: CacheType;
+
+export function Cache(
+  props: React.PropsWithChildren<{ readonly cache?: CacheType }>
+) {
+  cache =
+    props.cache ?? new Map<string, Promise<unknown> | { data: unknown }>();
+  return React.createElement(React.Fragment, {}, props.children);
+}
 
 /**
  * Contextを使わないuseSWRの代替
