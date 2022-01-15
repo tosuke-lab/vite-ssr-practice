@@ -22,8 +22,7 @@
   "homepage": "https://github.com/tosuke-lab/vite-ssr-practice#readme",
   "dependencies": {
     "react": "^18.0.0-rc.0",
-    "react-dom": "^18.0.0-rc.0",
-    "web-streams-polyfill": "^3.2.0"
+    "react-dom": "^18.0.0-rc.0"
   },
   "devDependencies": {
     "@types/express": "^4.17.13",
