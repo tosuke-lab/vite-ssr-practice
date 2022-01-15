@@ -3,6 +3,7 @@ import ReactDOMServer, { RenderControls } from "react-dom/server";
 import type { RenderOptions } from "react-dom/server.browser.js";
 import React from "react";
 
+// https://github.com/facebook/react/issues/22772 の回避のため，Node.jsのWritableをモックして描画する
 export function renderToReadableStream(
   element: React.ReactChild | Iterable<React.ReactNode>,
   { signal, ...options }: RenderOptions
@@ -12,7 +13,8 @@ export function renderToReadableStream(
   let control: RenderControls;
   let piped: boolean = false;
   let stalled: boolean = false;
-  let drainListeners: Array<() => void> = [];
+  const drainListeners: Array<() => void> = [];
+  let stallListeners: Array<() => void> = [];
   return new ReadableStream({
     start() {
       control = ReactDOMServer.renderToPipeableStream(element, options);
@@ -28,6 +30,8 @@ export function renderToReadableStream(
             const moreWritable = controller.desiredSize! > 0;
             if (!moreWritable) {
               stalled = true;
+              stallListeners.forEach((listener) => listener());
+              stallListeners = [];
             }
             return moreWritable;
           },
@@ -45,10 +49,14 @@ export function renderToReadableStream(
         };
         control.pipe(writable as streamInternal.Writable);
         piped = true;
-      }
-      if (stalled) {
+      } else if (stalled) {
         drainListeners.forEach((listener) => listener());
         stalled = false;
+      } else {
+        // wait for "stall"
+        return new Promise((resolve) => {
+          stallListeners.push(resolve);
+        });
       }
     },
   });

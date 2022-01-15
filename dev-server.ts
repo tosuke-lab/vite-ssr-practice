@@ -40,13 +40,15 @@ async function createServer() {
       res.status(result.statusCode);
       res.contentType("text/html");
 
-      try {
-        for await (const chunk of result.stream as webstreams.ReadableStream) {
+      const resWritable = new webstreams.WritableStream<ArrayBuffer>({
+        write(chunk) {
           res.write(chunk);
-        }
-      } finally {
-        res.end();
-      }
+        },
+        abort(err) {
+          throw err;
+        },
+      });
+      await result.stream.pipeTo(resWritable);
     } catch (e) {
       if (e instanceof Error) {
         vite.ssrFixStacktrace(e);
@@ -56,6 +58,8 @@ async function createServer() {
         console.error(e);
         res.status(500).end("Internal Server Error");
       }
+    } finally {
+      res.end();
     }
   });
 
