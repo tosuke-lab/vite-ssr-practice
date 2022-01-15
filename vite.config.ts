@@ -6,15 +6,20 @@ function extendConfig<C extends UserConfig>(config: C): C {
 }
 
 export default defineConfig((env) => {
-  const dev = env.mode === "development";
+  const prod = env.mode === "production";
 
   const config = extendConfig({
     plugins: [viteReact()],
     ssr: {
-      noExternal: !dev,
+      noExternal: prod,
+      target: "webworker",
     },
     resolve: {
       alias: [{ find: "stream", replacement: "/polyfill/stream" }],
+    },
+    build: {
+      minify: prod,
+      sourcemap: prod ? "hidden" : true,
     },
   });
 
