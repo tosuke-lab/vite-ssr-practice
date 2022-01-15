@@ -23,7 +23,7 @@ export async function renderToStream({ signal, bodyElements }: RenderOptions) {
   return await new Promise<RenderResult>((resolve, reject) => {
     let shouldInjectHead = false;
 
-    const injectHead = new TransformStream({
+    const injectHead = new TransformStream<ArrayBuffer>({
       start(controller) {
         controller.enqueue(textEncoder.encode("<!doctype html><html><head>"));
       },
@@ -34,6 +34,7 @@ export async function renderToStream({ signal, bodyElements }: RenderOptions) {
           controller.enqueue(textEncoder.encode(head));
           controller.enqueue(textEncoder.encode("</head><body>"));
           controller.enqueue(textEncoder.encode(bodyElements));
+
           shouldInjectHead = false;
         }
         controller.enqueue(chunk);
