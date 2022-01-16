@@ -2,9 +2,11 @@ import { renderToReadableStream } from "./framework/server/renderToReadableStrea
 import { App } from "./App";
 import { ServerCache } from "./framework/server/cache";
 import { CacheContext } from "./framework/shared/cache";
+import { TransformStream } from "web-streams-polyfill/ponyfill/es2018";
 
 type RenderOptions = {
   readonly signal?: AbortSignal;
+  readonly headElements?: string;
   readonly bodyElements?: string;
 };
 
@@ -13,7 +15,11 @@ type RenderResult = {
   readonly stream: ReadableStream;
 };
 
-export async function renderToStream({ signal, bodyElements }: RenderOptions) {
+export async function renderToStream({
+  signal,
+  headElements,
+  bodyElements,
+}: RenderOptions) {
   const cache = new ServerCache();
 
   const el = (
@@ -29,7 +35,7 @@ export async function renderToStream({ signal, bodyElements }: RenderOptions) {
   return await new Promise<RenderResult>((resolve, reject) => {
     let shouldInjectHead = false;
 
-    const injectHead = new TransformStream<ArrayBuffer>({
+    const injectTransform = new TransformStream<ArrayBuffer>({
       start(controller) {
         controller.enqueue(textEncoder.encode("<!doctype html><html><head>"));
       },
@@ -38,8 +44,13 @@ export async function renderToStream({ signal, bodyElements }: RenderOptions) {
           const head =
             '<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>';
           controller.enqueue(textEncoder.encode(head));
+          if (headElements) {
+            controller.enqueue(textEncoder.encode(headElements));
+          }
           controller.enqueue(textEncoder.encode("</head><body>"));
-          controller.enqueue(textEncoder.encode(bodyElements));
+          if (bodyElements) {
+            controller.enqueue(textEncoder.encode(bodyElements));
+          }
 
           shouldInjectHead = false;
         }
@@ -75,6 +86,6 @@ export async function renderToStream({ signal, bodyElements }: RenderOptions) {
           });
         });
       },
-    }).pipeThrough(injectHead);
+    }).pipeThrough(injectTransform);
   });
 }

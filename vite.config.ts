@@ -11,11 +11,17 @@ export default defineConfig((env) => {
   const config = extendConfig({
     plugins: [viteReact()],
     ssr: {
-      noExternal: prod,
+      noExternal: env.command === "build",
       target: "webworker",
     },
     resolve: {
-      alias: [{ find: "stream", replacement: "/polyfill/stream" }],
+      alias: [
+        { find: "stream", replacement: "/polyfill/stream" },
+        {
+          find: "react-dom/server",
+          replacement: "/polyfill/react-dom-server.production.js",
+        },
+      ],
     },
     build: {
       minify: prod,

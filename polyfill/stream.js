@@ -1,1 +1,0 @@
-exports.ReadableStream = class {};

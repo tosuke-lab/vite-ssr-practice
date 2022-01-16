@@ -2,6 +2,7 @@ import type { default as streamInternal } from "stream";
 import ReactDOMServer, { RenderControls } from "react-dom/server";
 import type { RenderOptions } from "react-dom/server.browser.js";
 import React from "react";
+import { ReadableStream } from "web-streams-polyfill/ponyfill/es2018";
 
 // https://github.com/facebook/react/issues/22772 の回避のため，Node.jsのWritableをモックして描画する
 export function renderToReadableStream(
@@ -15,7 +16,7 @@ export function renderToReadableStream(
   let stalled: boolean = false;
   const drainListeners: Array<() => void> = [];
   let stallListeners: Array<() => void> = [];
-  return new ReadableStream({
+  return new ReadableStream<ArrayBuffer>({
     start() {
       control = ReactDOMServer.renderToPipeableStream(element, options);
       signal?.addEventListener("abort", () => control.abort());
