@@ -1,5 +1,7 @@
-import { renderToReadableStream } from "./server/renderToReadableStream";
+import { renderToReadableStream } from "./framework/server/renderToReadableStream";
 import { App } from "./App";
+import { ServerCache } from "./framework/server/cache";
+import { CacheContext } from "./framework/shared/cache";
 
 type RenderOptions = {
   readonly signal?: AbortSignal;
@@ -12,10 +14,14 @@ type RenderResult = {
 };
 
 export async function renderToStream({ signal, bodyElements }: RenderOptions) {
+  const cache = new ServerCache();
+
   const el = (
-    <div id="app">
-      <App />
-    </div>
+    <CacheContext.Provider value={cache}>
+      <div id="app">
+        <App />
+      </div>
+    </CacheContext.Provider>
   );
 
   const textEncoder = new TextEncoder();
@@ -36,6 +42,17 @@ export async function renderToStream({ signal, bodyElements }: RenderOptions) {
           controller.enqueue(textEncoder.encode(bodyElements));
 
           shouldInjectHead = false;
+        }
+        // キャッシュの状態変化をクライアントに通知する
+        if (cache.hasChanges()) {
+          const changes = cache.flushChangedState();
+          controller.enqueue(
+            textEncoder.encode(
+              `<script>(self.__cache||(self.__cache=[])).push(${JSON.stringify(
+                changes
+              )})</script>`
+            )
+          );
         }
         controller.enqueue(chunk);
       },

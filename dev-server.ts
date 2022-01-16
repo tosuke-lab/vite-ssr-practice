@@ -20,7 +20,11 @@ async function createServer() {
 
   app.use("*", async (req, res) => {
     try {
-      const indexHtml = await fs.readFile("index.html", { encoding: "utf8" });
+      const indexHtml = await fs
+        .readFile("index.html", { encoding: "utf8" })
+        .then((html) =>
+          html.replace("/src/entry-client.tsx", "/src/entry-client.dev.js")
+        );
 
       const htmlScripts = await vite.transformIndexHtml(
         req.originalUrl,
