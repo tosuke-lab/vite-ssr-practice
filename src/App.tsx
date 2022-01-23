@@ -6,14 +6,16 @@ const Lazy = React.lazy(() => import("./components/lazy"));
 
 export const App: React.VFC = () => {
   return (
-    <div>
-      <p>Hello World!</p>
-      <Counter />
-      {/* FIXME: lazy component が client side ではトップレベルで動作しない */}
-      {/*<Lazy />*/}
-      <Suspense fallback="loading...">
-        <Slow />
-      </Suspense>
-    </div>
+    <Suspense fallback={null}>
+      <div>
+        <p>Hello World!</p>
+        <Counter />
+        {/* FIXME: lazy component が client side ではトップレベルで動作しない */}
+        <Lazy />
+        <Suspense fallback="loading...">
+          <Slow />
+        </Suspense>
+      </div>
+    </Suspense>
   );
 };

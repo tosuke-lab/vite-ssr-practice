@@ -1,14 +1,6 @@
 import fs from "node:fs/promises";
-import webstreams from "node:stream/web";
 import { createServer as createViteServer } from "vite";
 import express from "express";
-
-Object.defineProperty(global, "TransformStream", {
-  value: webstreams.TransformStream,
-});
-Object.defineProperty(global, "ReadableStream", {
-  value: webstreams.ReadableStream,
-});
 
 async function createServer() {
   const app = express();
@@ -16,6 +8,7 @@ async function createServer() {
   const vite = await createViteServer({
     server: { middlewareMode: "ssr" },
   });
+
   app.use(vite.middlewares);
 
   app.use("*", async (req, res) => {
@@ -44,15 +37,20 @@ async function createServer() {
       res.status(result.statusCode);
       res.contentType("text/html");
 
-      const resWritable = new webstreams.WritableStream<ArrayBuffer>({
-        write(chunk) {
-          res.write(chunk);
-        },
-        abort(err) {
-          throw err;
-        },
-      });
-      await result.stream.pipeTo(resWritable);
+      const reader = result.stream.getReader();
+      for (;;) {
+        const r = await reader.read();
+        if (r.done) break;
+        await new Promise<void>((resolve, reject) => {
+          res.write(r.value, (err) => {
+            if (err == null) {
+              resolve();
+            } else {
+              reject(err);
+            }
+          });
+        });
+      }
     } catch (e) {
       if (e instanceof Error) {
         vite.ssrFixStacktrace(e);

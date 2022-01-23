@@ -10,7 +10,7 @@ const textEncoder = new TextEncoder();
 };
 
 (globalThis as any).setImmediate = (cb: () => void) => {
-  void cb();
+  setTimeout(cb, 0);
 };
 
 async function handleAsset(event: FetchEvent, url: URL) {
@@ -36,36 +36,53 @@ addEventListener("fetch", (eventBase) => {
   }
 
   event.respondWith(
-    import("./entry-server").then((mod) =>
-      mod
-        .renderToStream({ headElements: indexHtml })
-        .then(async ({ statusCode, stream }) => {
-          const { readable, writable } = new TransformStream();
-          void (async () => {
-            const reader = stream.getReader();
-            const writer = writable.getWriter();
-            try {
-              for (;;) {
-                const r = await reader.read();
-                if (r.done) break;
-                await writer.write(r.value);
-              }
-            } finally {
-              writer.close();
+    import("./entry-server")
+      .then(async (mod) => {
+        const controller = new AbortController();
+
+        const signal = controller.signal;
+
+        const { readable, writable } = new TransformStream();
+        const writer = writable.getWriter();
+
+        const { statusCode, stream } = await mod.renderToStream({
+          signal,
+          headElements: indexHtml,
+        });
+
+        // タイムアウトを付与することで，Workerの稼動時間を延長する
+        const timeout = setTimeout(() => {
+          controller.abort();
+        }, 10 * 1000);
+
+        signal.addEventListener("abort", () => {
+          writer.close();
+        });
+
+        const reader = stream.getReader();
+        void (async () => {
+          try {
+            for (;;) {
+              const r = await reader.read();
+              if (r.done) break;
+              await writer.write(r.value);
             }
-          })();
-          return new Response(readable, {
-            status: statusCode,
-            headers: {
-              "content-type": "text/html",
-            },
-          });
-        })
-        .catch((error) => {
-          return new Response(error.message, {
-            status: 500,
-          });
-        })
-    )
+          } finally {
+            clearTimeout(timeout);
+            writer.close();
+          }
+        })();
+        return new Response(readable, {
+          status: statusCode,
+          headers: {
+            "content-type": "text/html",
+          },
+        });
+      })
+      .catch((error) => {
+        return new Response(error.message, {
+          status: 500,
+        });
+      })
   );
 });

@@ -15,13 +15,13 @@ export function renderToReadableStream(
   let piped: boolean = false;
   let stalled: boolean = false;
   const drainListeners: Array<() => void> = [];
-  let stallListeners: Array<() => void> = [];
-  return new ReadableStream<ArrayBuffer>({
+
+  const stream = new ReadableStream<ArrayBuffer>({
     start() {
       control = ReactDOMServer.renderToPipeableStream(element, options);
       signal?.addEventListener("abort", () => control.abort());
     },
-    pull(controller) {
+    async pull(controller) {
       if (!piped) {
         const writable = {
           write(chunk: Buffer | string) {
@@ -31,10 +31,9 @@ export function renderToReadableStream(
             const moreWritable = controller.desiredSize! > 0;
             if (!moreWritable) {
               stalled = true;
-              stallListeners.forEach((listener) => listener());
-              stallListeners = [];
             }
-            return moreWritable;
+            // FIXME: 本当はbackPressureを適用したほうがいいが，常にネットワーク側に流そうとしているので，動いてしまう
+            return true;
           },
           end() {
             controller.close();
@@ -50,15 +49,14 @@ export function renderToReadableStream(
         };
         control.pipe(writable as streamInternal.Writable);
         piped = true;
-      } else if (stalled) {
+        return;
+      }
+      if (stalled) {
         drainListeners.forEach((listener) => listener());
         stalled = false;
-      } else {
-        // wait for "stall"
-        return new Promise((resolve) => {
-          stallListeners.push(resolve);
-        });
+        return;
       }
     },
   });
+  return stream;
 }

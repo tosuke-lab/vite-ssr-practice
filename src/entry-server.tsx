@@ -2,7 +2,12 @@ import { renderToReadableStream } from "./framework/server/renderToReadableStrea
 import { App } from "./App";
 import { ServerCache } from "./framework/server/cache";
 import { CacheContext } from "./framework/shared/cache";
-import { TransformStream } from "web-streams-polyfill/ponyfill/es2018";
+import {
+  ReadableStream,
+  TransformStream,
+} from "web-streams-polyfill/ponyfill/es2018";
+
+(globalThis as any).ReadableStream = ReadableStream;
 
 type RenderOptions = {
   readonly signal?: AbortSignal;
@@ -12,7 +17,7 @@ type RenderOptions = {
 
 type RenderResult = {
   readonly statusCode: number;
-  readonly stream: ReadableStream;
+  readonly stream: globalThis.ReadableStream;
 };
 
 export async function renderToStream({
