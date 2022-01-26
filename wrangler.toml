@@ -1,0 +1,16 @@
+name = "tosuke-streaming-html"
+type = "javascript"
+workers_dev = true
+compatibility_date = "2022-01-16"
+compatibility_flags = ["streams_enable_constructors"]
+
+[site]
+bucket = "./dist/client"
+entry-point = "./dist/server"
+exclude = ["*.map", "*.json", "*.html"]
+
+[build]
+command = "pnpm run build:server:worker && cp wrangler/package.json dist/server"
+
+[build.upload]
+format = "service-worker"
