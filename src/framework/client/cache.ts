@@ -1,4 +1,3 @@
-import { type } from "os";
 import type { Resource, Cache, Fetcher } from "../shared/cache";
 
 type ResourceState<T> =
@@ -7,30 +6,35 @@ type ResourceState<T> =
   | { type: "rejected"; error: unknown };
 
 class ClientResource<T> implements Resource<T> {
-  private constructor(public state: ResourceState<T>) {}
+  #state: ResourceState<T>;
+
+  private constructor(state: ResourceState<T>) {
+    this.#state = state;
+  }
 
   static fromPromise<T>(promise: Promise<T>): Resource<T> {
     const resource = new ClientResource<T>({
       type: "pending",
       promise: promise
         .then((value) => {
-          resource.state = { type: "resolved", value };
+          resource.#state = { type: "resolved", value };
         })
         .catch((error) => {
-          resource.state = { type: "rejected", error };
+          resource.#state = { type: "rejected", error };
         }),
     });
     return resource;
   }
 
   read(): T {
-    switch (this.state.type) {
+    const state = this.#state;
+    switch (state.type) {
       case "pending":
-        throw this.state.promise;
+        throw state.promise;
       case "resolved":
-        return this.state.value;
+        return state.value;
       case "rejected":
-        throw this.state.error;
+        throw state.error;
     }
   }
 }

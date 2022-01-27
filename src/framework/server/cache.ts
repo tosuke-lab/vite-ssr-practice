@@ -5,6 +5,62 @@ type ResourceState<T> =
   | { type: "resolved"; value: T }
   | { type: "rejected"; error: unknown };
 
+type StateMap = Map<string, ResourceState<unknown>>;
+
+class ServerResource<U> implements Resource<U> {
+  #changedStates: StateMap;
+  #key: string;
+  #state: ResourceState<U>;
+  #prevState: ResourceState<U> | undefined;
+
+  private constructor(
+    changedStates: StateMap,
+    key: string,
+    state: ResourceState<U>
+  ) {
+    this.#changedStates = changedStates;
+    this.#key = key;
+    this.#state = state;
+  }
+
+  static fromPromise<U>(
+    changedStates: StateMap,
+    key: string,
+    promise: Promise<U>
+  ) {
+    const resource = new ServerResource<U>(changedStates, key, {
+      type: "pending",
+      promise: promise
+        .then((value) => {
+          resource.#state = { type: "resolved", value };
+        })
+        .catch((error) => {
+          resource.#state = { type: "rejected", error };
+        }),
+    });
+    return resource;
+  }
+
+  read(): U {
+    const state = this.#state;
+    const prevState = this.#prevState;
+    // Suspense boundaryが開いたタイミングでキャッシュにstate変化を通知したいので，render phaseで呼ばれるreadでこれを行う
+    // promiseが解決したタイミングで任意に変化を通知してしまうと，異常な位置に<script>タグが生成されてしまう
+    if (prevState !== state) {
+      this.#prevState = state;
+      this.#changedStates.set(this.#key, state);
+    }
+    switch (state.type) {
+      case "pending":
+        throw state.promise;
+      case "resolved":
+        return state.value;
+      case "rejected":
+        throw state.error;
+    }
+  }
+}
+
 export class ServerCache implements Cache {
   private resources = new Map<string, Resource<unknown>>();
   private changedStates = new Map<string, ResourceState<unknown>>();
@@ -18,46 +74,8 @@ export class ServerCache implements Cache {
 
     const changedStates = this.changedStates;
 
-    class ServerResource<U> implements Resource<U> {
-      constructor(
-        private key: string,
-        public state: ResourceState<U>,
-        private previousState: ResourceState<U> | undefined
-      ) {}
-
-      read(): U {
-        // Suspense boundaryが開いたタイミングでキャッシュにstate変化を通知したいので，render phaseで呼ばれるreadでこれを行う
-        // promiseが解決したタイミングで任意に変化を通知してしまうと，異常な位置に<script>タグが生成されてしまう
-        if (this.previousState !== this.state) {
-          this.previousState = this.state;
-          changedStates.set(this.key, this.state);
-        }
-        switch (this.state.type) {
-          case "pending":
-            throw this.state.promise;
-          case "resolved":
-            return this.state.value;
-          case "rejected":
-            throw this.state.error;
-        }
-      }
-    }
-
     const promise = fetcher(key);
-    const resource = new ServerResource<T>(
-      key,
-      {
-        type: "pending",
-        promise: promise
-          .then((value) => {
-            resource.state = { type: "resolved", value };
-          })
-          .catch((error) => {
-            resource.state = { type: "rejected", error };
-          }),
-      },
-      undefined
-    );
+    const resource = ServerResource.fromPromise(changedStates, key, promise);
     this.resources.set(key, resource);
     return resource;
   }
