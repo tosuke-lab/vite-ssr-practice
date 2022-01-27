@@ -11,8 +11,8 @@ specifiers:
   cron-schedule: ^3.0.4
   express: ^4.17.2
   miniflare: 2.2.0
-  react: ^18.0.0-rc.0
-  react-dom: ^18.0.0-rc.0
+  react: ^0.0.0-experimental-529dc3ce8-20220124
+  react-dom: ^0.0.0-experimental-529dc3ce8-20220124
   ts-node: ^10.4.0
   typescript: ^4.5.4
   vite: ^2.7.11
@@ -20,8 +20,8 @@ specifiers:
 
 dependencies:
   '@cloudflare/kv-asset-handler': 0.2.0
-  react: 18.0.0-rc.0
-  react-dom: 18.0.0-rc.0_react@18.0.0-rc.0
+  react: 0.0.0-experimental-529dc3ce8-20220124
+  react-dom: 0.0.0-experimental-529dc3ce8-20220124_15c0ff226c754af78a705039ab3781b6
   web-streams-polyfill: 3.2.0
 
 devDependencies:
@@ -1445,15 +1445,15 @@ packages:
       unpipe: 1.0.0
     dev: true
 
-  /react-dom/18.0.0-rc.0_react@18.0.0-rc.0:
-    resolution: {integrity: sha512-tdD1n0svTndHBQvVAq/f2Kx7FgQ30CpSLp87/neQKAHPW5WtdgW1sBSwmFAcMQOrmstTuP0M+zRlH86f9kMX/A==}
+  /react-dom/0.0.0-experimental-529dc3ce8-20220124_15c0ff226c754af78a705039ab3781b6:
+    resolution: {integrity: sha512-FNqeU2sPoynTu7Sh1IY880Bxg/xX22tlsTHoh67J+PTY7aFBAYMgE5PkxZon54DpQkv2p8gWVIIzSObi4U7ZjQ==}
     peerDependencies:
-      react: ^18.0.0-rc.0
+      react: 0.0.0-experimental-529dc3ce8-20220124
     dependencies:
       loose-envify: 1.4.0
       object-assign: 4.1.1
-      react: 18.0.0-rc.0
-      scheduler: 0.21.0-rc.0-next-fe905f152-20220107
+      react: 0.0.0-experimental-529dc3ce8-20220124
+      scheduler: 0.0.0-experimental-529dc3ce8-20220124
     dev: false
 
   /react-refresh/0.11.0:
@@ -1461,8 +1461,8 @@ packages:
     engines: {node: '>=0.10.0'}
     dev: true
 
-  /react/18.0.0-rc.0:
-    resolution: {integrity: sha512-PawosMBgF8k5Nlc3++ibzjFqPvo1XKv80MNtVYqz3abHHB2w3IpU65sSdSmBd2ooCwVhcp9b1vkx/twqhakNtA==}
+  /react/0.0.0-experimental-529dc3ce8-20220124:
+    resolution: {integrity: sha512-EGC2hJU4tjaVgcLHE090M592h+AfO6Y88cnS1XtPMHWBgsNpO4t3rZfLFU4bMor3wRSKPEIzmEcpaPWCrJWctA==}
     engines: {node: '>=0.10.0'}
     dependencies:
       loose-envify: 1.4.0
@@ -1505,8 +1505,8 @@ packages:
     resolution: {integrity: sha512-YZo3K82SD7Riyi0E1EQPojLz7kpepnSQI9IyPbHHg1XXXevb5dJI7tpyN2ADxGcQbHG7vcyRHk0cbwqcQriUtg==}
     dev: true
 
-  /scheduler/0.21.0-rc.0-next-fe905f152-20220107:
-    resolution: {integrity: sha512-+sY0WajWdMjoxbmHM8P6P1FKGw8sSVKKG/HthqTFQFPxVGbKLmV1BiFPaVF9gOyQWqmnLYSXJMN+4Bs5ZygsTw==}
+  /scheduler/0.0.0-experimental-529dc3ce8-20220124:
+    resolution: {integrity: sha512-mp0MaDWUfFuByyQS3syKFF3pqk7m6NcIsTNFsu/7jdy0GCqk7jy3T2YgHF3S1Y0qNhV9TYCgGwLTZSNaae2uUQ==}
     dependencies:
       loose-envify: 1.4.0
       object-assign: 4.1.1
