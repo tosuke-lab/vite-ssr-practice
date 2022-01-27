@@ -26,7 +26,7 @@ async function createServer() {
 
       const serverModule = (await vite.ssrLoadModule(
         "/src/entry-server.tsx"
-      )) as typeof import("./src/entry-server");
+      )) as typeof import("./entry-server");
 
       const controller = new AbortController();
       const result = await serverModule.renderToStream({

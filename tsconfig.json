@@ -13,6 +13,7 @@
     /* Language and Environment */
     "target": "es2021" /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */,
     "lib": [
+      "es2021",
       "dom",
       "webworker"
     ] /* Specify a set of bundled library declaration files that describe the target runtime environment. */,
@@ -105,6 +106,6 @@
     // "skipDefaultLibCheck": true,                      /* Skip type checking .d.ts files that are included with TypeScript. */
     "skipLibCheck": true /* Skip type checking all .d.ts files. */
   },
-  "include": ["src/**/*", "dev-server.ts"],
+  "include": ["src"],
   "exclude": ["node_modules"]
 }
