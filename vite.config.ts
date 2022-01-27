@@ -16,10 +16,10 @@ export default defineConfig((env) => {
     },
     resolve: {
       alias: [
-        { find: "stream", replacement: "/polyfill/stream" },
+        { find: "stream", replacement: "/aliases/stream" },
         {
           find: "react-dom/server",
-          replacement: "/polyfill/react-dom-server.production.js",
+          replacement: "/aliases/react-dom-server.cjs",
         },
       ],
     },
