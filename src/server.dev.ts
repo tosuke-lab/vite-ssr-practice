@@ -29,14 +29,27 @@ async function createServer() {
       )) as typeof import("./entry-server");
 
       const controller = new AbortController();
+      const searchParams = new URLSearchParams();
+      for (const [key, values] of Object.entries(req.query)) {
+        if (typeof values === "string") {
+          searchParams.append(key, values);
+        } else if (Array.isArray(values)) {
+          for (const value of values) {
+            if (typeof value === "string") {
+              searchParams.append(key, value);
+            }
+          }
+        }
+      }
       const result = await serverModule.renderToStream({
-        url: req.url,
+        pathname: req.path,
+        searchParams,
         signal: controller.signal,
         bodyElements: htmlScripts,
       });
 
       res.status(result.statusCode);
-      res.contentType("text/html");
+      res.header(result.headers);
 
       const reader = result.stream.getReader();
       for (;;) {

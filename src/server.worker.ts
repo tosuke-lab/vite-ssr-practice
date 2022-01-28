@@ -18,9 +18,10 @@ async function handleRequest(event: FetchEvent) {
       writer.close();
     });
 
-    const { statusCode, stream } = await renderToStream({
+    const { statusCode, headers, stream } = await renderToStream({
       signal,
-      url,
+      pathname: url.pathname,
+      searchParams: url.searchParams,
       headElements: indexHtml,
     });
 
@@ -39,9 +40,7 @@ async function handleRequest(event: FetchEvent) {
 
     return new Response(readable, {
       status: statusCode,
-      headers: {
-        "content-type": "text/html",
-      },
+      headers,
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);

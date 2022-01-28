@@ -12,18 +12,6 @@ import type { BundlerConfig } from "react-server-dom-webpack/writer.node.server"
 import { createFromReadableStream } from "react-server-dom-webpack";
 import { Suspense } from "react";
 
-type RenderOptions = {
-  readonly signal?: AbortSignal;
-  readonly url: string;
-  readonly headElements?: string;
-  readonly bodyElements?: string;
-};
-
-type RenderResult = {
-  readonly statusCode: number;
-  readonly stream: globalThis.ReadableStream;
-};
-
 const bundlerConfig = new Proxy(
   {} as { [filepath: string | symbol]: unknown },
   {
@@ -40,13 +28,36 @@ const bundlerConfig = new Proxy(
   }
 ) as BundlerConfig;
 
+type RenderOptions = {
+  readonly signal?: AbortSignal;
+  readonly pathname: string;
+  readonly searchParams: URLSearchParams;
+  readonly headElements?: string;
+  readonly bodyElements?: string;
+};
+
+type RenderResult = {
+  readonly statusCode: number;
+  readonly headers: Record<string, string>;
+  readonly stream: globalThis.ReadableStream;
+};
+
 export async function renderToStream({
   signal,
-  url,
+  pathname,
+  searchParams,
   headElements,
   bodyElements,
 }: RenderOptions): Promise<RenderResult> {
   const flightStream = renderFlightToReadableStream(<App />, bundlerConfig);
+
+  if (searchParams.has("flight")) {
+    return {
+      statusCode: 200,
+      stream: flightStream,
+      headers: {},
+    };
+  }
 
   const [streamForRSC, streamForStore] = flightStream.tee();
 
@@ -152,6 +163,9 @@ export async function renderToStream({
           resolve({
             statusCode: 200,
             stream: readable,
+            headers: {
+              "content-type": "text/html",
+            },
           });
         });
       },
