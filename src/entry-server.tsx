@@ -1,16 +1,20 @@
-import { renderToReadableStream } from "./framework/server/renderToReadableStream";
-import { App } from "./App";
-import { ServerCache } from "./framework/server/cache";
-import { CacheContext } from "./framework/shared/cache";
+import "./framework/shared/webpack-chunk-loader-polyfill";
 import {
-  ReadableStream,
-  TransformStream,
-} from "web-streams-polyfill/ponyfill/es2018";
-
-(globalThis as any).ReadableStream = ReadableStream;
+  renderFlightToReadableStream,
+  renderToReadableStream,
+} from "./framework/server/renderToReadableStream";
+import { App } from "./App.server";
+import { ServerCache } from "./framework/server/cache";
+import { RSCStore } from "./framework/server/rsc";
+import { CacheContext } from "./framework/shared/cache";
+import { TransformStream } from "web-streams-polyfill/ponyfill/es2018";
+import type { BundlerConfig } from "react-server-dom-webpack/writer.node.server";
+import { createFromReadableStream } from "react-server-dom-webpack";
+import { Suspense } from "react";
 
 type RenderOptions = {
   readonly signal?: AbortSignal;
+  readonly url: string;
   readonly headElements?: string;
   readonly bodyElements?: string;
 };
@@ -20,19 +24,51 @@ type RenderResult = {
   readonly stream: globalThis.ReadableStream;
 };
 
+const bundlerConfig = new Proxy(
+  {} as { [filepath: string | symbol]: unknown },
+  {
+    get(target, path) {
+      return (target[path] ??= new Proxy(
+        {} as { [name: string | symbol]: unknown },
+        {
+          get(target, name) {
+            return (target[name] ??= { id: path, chunks: [path], name });
+          },
+        }
+      ));
+    },
+  }
+) as BundlerConfig;
+
 export async function renderToStream({
   signal,
+  url,
   headElements,
   bodyElements,
-}: RenderOptions) {
+}: RenderOptions): Promise<RenderResult> {
+  const flightStream = renderFlightToReadableStream(<App />, bundlerConfig);
+
+  const [streamForRSC, streamForStore] = flightStream.tee();
+
+  const rscStore = new RSCStore();
+  streamForStore.pipeTo(rscStore.sink);
+  const flightResponse = createFromReadableStream(streamForRSC);
+
+  const RSCContent = () => flightResponse.readRoot();
+  const RSCRoot = () => (
+    <Suspense fallback={null}>
+      <RSCContent />
+    </Suspense>
+  );
+
   const cache = new ServerCache();
 
   const el = (
-    <CacheContext.Provider value={cache}>
-      <div id="app">
-        <App />
-      </div>
-    </CacheContext.Provider>
+    <div id="app">
+      <CacheContext.Provider value={cache}>
+        <RSCRoot />
+      </CacheContext.Provider>
+    </div>
   );
 
   const textEncoder = new TextEncoder();
@@ -40,6 +76,8 @@ export async function renderToStream({
   return await new Promise<RenderResult>((resolve, reject) => {
     let shouldInjectHead = false;
 
+    let cacheInitialized = false;
+    let flightInitialized = false;
     const injectTransform = new TransformStream<ArrayBuffer>({
       start(controller) {
         controller.enqueue(textEncoder.encode("<!doctype html><html><head>"));
@@ -59,21 +97,47 @@ export async function renderToStream({
 
           shouldInjectHead = false;
         }
+
+        let script = "";
         // キャッシュの状態変化をクライアントに通知する
         if (cache.hasChanges()) {
           const changes = cache.flushChangedState();
-          controller.enqueue(
-            textEncoder.encode(
-              `<script>(self.__cache||(self.__cache=[])).push(${JSON.stringify(
-                changes
-              )})</script>`
-            )
-          );
+          if (!cacheInitialized) {
+            script += "var __cache=[];";
+            cacheInitialized = true;
+          }
+          script += `__cache.push(${JSON.stringify(changes)});`;
+        }
+
+        if (rscStore.hasUnreleasedRow) {
+          if (!flightInitialized) {
+            script += "var __flight=[];";
+            flightInitialized = true;
+          }
+          const rows = rscStore
+            .releaseRows()
+            .map((row) => {
+              const escaped = row.replace(/\\|'/g, (v) => "\\" + v);
+              return `'${escaped}'`;
+            })
+            .join(",");
+
+          script += "__flight.push(";
+          script += rows;
+          script += ");";
+        }
+        if (script !== "") {
+          controller.enqueue(textEncoder.encode(`<script>${script}</script>`));
         }
         controller.enqueue(chunk);
       },
       flush(controller) {
-        controller.enqueue(textEncoder.encode("</body></html>"));
+        let html = "";
+        if (flightInitialized) {
+          html += '<script>__flight.push("");</script>';
+        }
+        html += "</body></html>";
+        controller.enqueue(textEncoder.encode(html));
       },
     });
 

@@ -20,6 +20,7 @@ async function handleRequest(event: FetchEvent) {
 
     const { statusCode, stream } = await renderToStream({
       signal,
+      url,
       headElements: indexHtml,
     });
 

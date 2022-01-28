@@ -1,16 +1,17 @@
+import "./framework/shared/webpack-chunk-loader-polyfill.js";
 import React from "react";
 import ReactDOM from "react-dom";
 import { ClientCache } from "./framework/client/cache";
-import { App } from "./App";
 import { CacheContext } from "./framework/shared/cache";
+import { FlightApp } from "./framework/client/rsc";
 
 const cache = new ClientCache();
 
 // サーバー側でのキャッシュ変化を受け取り，クライアント側に反映させる
-((self as any).__cache ??= []).forEach((value: unknown) =>
+((window as any).__cache ??= []).forEach((value: unknown) =>
   cache.resolveServerCache(value)
 );
-(self as any).__cache.push = (value: unknown) =>
+(window as any).__cache.push = (value: unknown) =>
   cache.resolveServerCache(value);
 
 let reactRoot: ReactDOM.Root;
@@ -21,7 +22,7 @@ if (rootEl != null) {
     rootEl,
     <React.StrictMode>
       <CacheContext.Provider value={cache}>
-        <App />
+        <FlightApp />
       </CacheContext.Provider>
     </React.StrictMode>
   );

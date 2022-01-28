@@ -26,26 +26,3 @@ declare module "react-dom/server" {
     options?: RenderOptions
   ): RenderControls;
 }
-
-declare module "react-dom/server.browser" {
-  function renderToString(element: React.ReactElement): string;
-
-  interface RenderOptions {
-    identifierPrefix?: string;
-    namespaceURI?: string;
-    nonce?: string;
-    bootstrapScriptContent?: string;
-    bootstrapScripts?: string[];
-    bootstrapModules?: string[];
-    progressiveChunkSize?: number;
-    signal?: AbortSignal;
-    onCompleteShell?: () => void;
-    onCompleteAll?: () => void;
-    onError?: (error: unknown) => void;
-  }
-
-  function renderToReadableStream(
-    children: React.ReactChild | Iterable<React.ReactNode>,
-    options?: RenderOptions
-  ): ReadableStream;
-}

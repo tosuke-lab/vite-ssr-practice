@@ -30,6 +30,7 @@ async function createServer() {
 
       const controller = new AbortController();
       const result = await serverModule.renderToStream({
+        url: req.url,
         signal: controller.signal,
         bodyElements: htmlScripts,
       });

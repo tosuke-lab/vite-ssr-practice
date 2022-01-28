@@ -1,7 +1,7 @@
 import { useData } from "../lib/data";
 
-export const Slow = (): JSX.Element => {
-  useData("stop", () => new Promise((r) => setTimeout(r, 2000)));
+export const Slow = ({ ms }: { ms: number }): JSX.Element => {
+  useData(`stop/${ms}`, () => new Promise((r) => setTimeout(r, ms)));
 
   return <p>Slow</p>;
 };

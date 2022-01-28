@@ -38,6 +38,7 @@
     "types": [
       "vite/client",
       "react/next",
+      "react/experimental",
       "react-dom/next"
     ] /* Specify type package names to be included without being referenced in a source file. */,
     // "allowUmdGlobalAccess": true,                     /* Allow accessing UMD globals from modules. */

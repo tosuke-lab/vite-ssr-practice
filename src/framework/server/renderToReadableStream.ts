@@ -1,6 +1,11 @@
 import type { default as streamInternal } from "stream";
 import ReactDOMServer, { RenderControls } from "react-dom/server";
 import type { RenderOptions } from "react-dom/server.browser.js";
+import ReactFlightServer, {
+  Options as FlightOptions,
+  Controls as FlightControls,
+  BundlerConfig,
+} from "react-server-dom-webpack/writer.node.server";
 import React from "react";
 import { ReadableStream } from "web-streams-polyfill/ponyfill/es2018";
 
@@ -58,5 +63,50 @@ export function renderToReadableStream(
       }
     },
   });
+  return stream;
+}
+
+export function renderFlightToReadableStream(
+  element: React.ReactElement | Iterable<React.ReactNode>,
+  bundlerConfig: BundlerConfig,
+  options?: FlightOptions
+): ReadableStream<ArrayBuffer> {
+  const textEncoder = new TextEncoder();
+
+  let controls: FlightControls;
+  let piped: boolean = false;
+
+  const stream = new ReadableStream<ArrayBuffer>({
+    start() {
+      controls = ReactFlightServer.renderToPipeableStream(
+        element,
+        bundlerConfig,
+        options
+      );
+    },
+    pull(controller) {
+      if (!piped) {
+        const writable = {
+          write(chunk: Buffer | string) {
+            const buf =
+              typeof chunk === "string" ? textEncoder.encode(chunk) : chunk;
+            controller.enqueue(buf);
+            return true;
+          },
+          end() {
+            controller.close();
+          },
+          destroy(err: unknown) {
+            controller.error(err);
+          },
+          on(_type: string, _listener: () => void) {},
+        };
+        controls.pipe(writable as streamInternal.Writable);
+        piped = true;
+        return;
+      }
+    },
+  });
+
   return stream;
 }
