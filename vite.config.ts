@@ -65,9 +65,10 @@ const rscPlugin = (): Plugin => {
           path.relative(importerPath, config.root)
         );
         const importPrefix = pathFromImporterToRoot + "/";
-        const importMap = `import.meta.glob(${JSON.stringify(
-          importPrefix + CLIENT_COMPONENT_GLOB
-        )})`;
+        const glob = `"${importPrefix}${CLIENT_COMPONENT_GLOB}"`;
+        const importMap = options.ssr
+          ? `import.meta.globEager(${glob})`
+          : `import.meta.glob(${glob})`;
 
         const s = new MagicString(code);
 

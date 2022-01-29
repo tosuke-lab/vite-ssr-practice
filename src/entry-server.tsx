@@ -1,4 +1,4 @@
-import "./framework/shared/webpack-chunk-loader-polyfill";
+import "./framework/server/webpack-chunk-loader-polyfill";
 import {
   renderFlightToReadableStream,
   renderToReadableStream,
