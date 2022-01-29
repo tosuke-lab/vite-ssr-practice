@@ -2,6 +2,7 @@ declare module "react-dom/server.browser.js" {
   import React from "react";
 
   export function renderToString(element: React.ReactElement): string;
+  export function renderToStaticMarkup(element: React.ReactElement): string;
 
   export interface RenderOptions {
     identifierPrefix?: string;

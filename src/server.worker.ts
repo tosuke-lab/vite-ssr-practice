@@ -1,4 +1,4 @@
-import indexHtml from "../dist/client/index.html?raw";
+import viteManifest from "../dist/client/manifest.json";
 import { renderToStream } from "./entry-server";
 import { getAssetFromKV } from "@cloudflare/kv-asset-handler";
 
@@ -20,9 +20,9 @@ async function handleRequest(event: FetchEvent) {
 
     const { statusCode, headers, stream } = await renderToStream({
       signal,
+      viteManifest,
       pathname: url.pathname,
       searchParams: url.searchParams,
-      headElements: indexHtml,
     });
 
     const reader = stream.getReader();

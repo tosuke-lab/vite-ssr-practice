@@ -12,21 +12,19 @@ export const App = ({ pathname }: { pathname: string }): JSX.Element => {
       <Head>
         <title>Path: {pathname}</title>
       </Head>
-      <div>
-        <h1>Page: {pathname}</h1>
-        <Counter />
-        <Slow ms={500}>
-          <p>Data1</p>
+      <h1>Page: {pathname}</h1>
+      <Counter />
+      <Slow ms={500}>
+        <p>Data1</p>
+      </Slow>
+      <Suspense key={nanoid()} fallback={<p>loading 2000 ms</p>}>
+        <Slow ms={2000}>
+          <p>Data2</p>
         </Slow>
-        <Suspense key={nanoid()} fallback={<p>loading 2000 ms</p>}>
-          <Slow ms={2000}>
-            <p>Data2</p>
-          </Slow>
-        </Suspense>
-        <p>
-          <Link href={`/${path}`}>Go to /{path}</Link>
-        </p>
-      </div>
+      </Suspense>
+      <p>
+        <Link href={`/${path}`}>Go to /{path}</Link>
+      </p>
     </>
   );
 };

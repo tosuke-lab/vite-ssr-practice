@@ -8,10 +8,10 @@ import { HelmetData, HelmetProvider } from "react-helmet-async";
 import {
   renderFlightToReadableStream,
   renderToReadableStream,
-} from "./framework/server/renderToReadableStream";
-import { RSCStore } from "./framework/server/rsc";
+} from "./framework/server/render-to-readable-stream";
+import { RSCStore, ViteManifest } from "./framework/server/rsc";
 import { HistoryContext, LocationContext } from "./framework/shared/router";
-import { App } from "./App.server";
+import { App } from "./app.server";
 
 const bundlerConfig = new Proxy(
   {} as { [filepath: string | symbol]: unknown },
@@ -31,6 +31,7 @@ const bundlerConfig = new Proxy(
 
 type RenderOptions = {
   readonly signal?: AbortSignal;
+  readonly viteManifest: ViteManifest;
   readonly pathname: string;
   readonly searchParams: URLSearchParams;
   readonly headElements?: string;
@@ -45,6 +46,7 @@ type RenderResult = {
 
 export async function renderToStream({
   signal,
+  viteManifest,
   pathname,
   searchParams,
   headElements,
@@ -67,7 +69,7 @@ export async function renderToStream({
   );
   const [streamForRSC, streamForStore] = flightStream.tee();
 
-  const rscStore = new RSCStore();
+  const rscStore = new RSCStore(viteManifest);
   streamForStore.pipeTo(rscStore.sink);
   const flightResponse = createFromReadableStream(streamForRSC);
 
@@ -110,6 +112,13 @@ export async function renderToStream({
           let head = "";
           head += `<meta charset="utf-8">`;
           head += `<meta name="viewport" content="width=device-width, initial-scale=1">`;
+
+          // Load dependencies
+          if (import.meta.env.PROD) {
+            head += rscStore.dependencies("index.html");
+          }
+
+          // helmet
           const helmet = helmetContext.helmet;
           if (helmet) {
             head += helmet.title.toString();
@@ -118,9 +127,6 @@ export async function renderToStream({
           }
 
           controller.enqueue(textEncoder.encode(head));
-          if (headElements) {
-            controller.enqueue(textEncoder.encode(headElements));
-          }
           controller.enqueue(textEncoder.encode("</head><body>"));
           if (bodyElements) {
             controller.enqueue(textEncoder.encode(bodyElements));

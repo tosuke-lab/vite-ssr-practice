@@ -32,6 +32,9 @@ async function createServer() {
         const controller = new AbortController();
 
         const result = await serverModule.renderToStream({
+          viteManifest: JSON.parse(
+            await fs.readFile("dist/client/manifest.json", "utf8")
+          ),
           pathname: url.pathname,
           searchParams: url.searchParams,
           signal: controller.signal,
