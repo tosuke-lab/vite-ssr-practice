@@ -1,7 +1,11 @@
-const moduleMap = new Map();
+import { moduleMap } from "./client-components-module-store";
 
 const importMap = __IMPORT_MAP__;
 const importPrefix = __IMPORT_PREFIX__;
+
+if (import.meta.hot) {
+  import.meta.hot.accept();
+}
 
 globalThis.__webpack_chunk_load__ = (chunkId) => {
   const module = moduleMap.get(chunkId);
@@ -17,5 +21,9 @@ globalThis.__webpack_chunk_load__ = (chunkId) => {
 };
 
 globalThis.__webpack_require__ = (id) => {
-  return moduleMap.get(id);
+  const module = moduleMap.get(id);
+  if (module == null) {
+    throw new Error(`Module ${id} not found`);
+  }
+  return module;
 };

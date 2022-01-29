@@ -3,14 +3,14 @@ import {
   renderFlightToReadableStream,
   renderToReadableStream,
 } from "./framework/server/renderToReadableStream";
-import { App } from "./App.server";
-import { ServerCache } from "./framework/server/cache";
-import { RSCStore } from "./framework/server/rsc";
-import { CacheContext } from "./framework/shared/cache";
-import { TransformStream } from "web-streams-polyfill/ponyfill/es2018";
-import type { BundlerConfig } from "react-server-dom-webpack/writer.node.server";
-import { createFromReadableStream } from "react-server-dom-webpack";
 import { Suspense } from "react";
+import { createFromReadableStream } from "react-server-dom-webpack";
+import type { BundlerConfig } from "react-server-dom-webpack/writer.node.server";
+import { createMemoryHistory } from "history";
+import { App } from "./App.server";
+import { RSCStore } from "./framework/server/rsc";
+import { TransformStream } from "web-streams-polyfill/ponyfill/es2018";
+import { HistoryContext, LocationContext } from "./framework/shared/router";
 
 const bundlerConfig = new Proxy(
   {} as { [filepath: string | symbol]: unknown },
@@ -49,16 +49,21 @@ export async function renderToStream({
   headElements,
   bodyElements,
 }: RenderOptions): Promise<RenderResult> {
-  const flightStream = renderFlightToReadableStream(<App />, bundlerConfig);
-
-  if (searchParams.has("flight")) {
+  if (pathname.endsWith(".flight")) {
+    const stream = renderFlightToReadableStream(
+      <App pathname={pathname.slice(0, -".flight".length)} />,
+      bundlerConfig
+    );
     return {
       statusCode: 200,
-      stream: flightStream,
+      stream: stream,
       headers: {},
     };
   }
-
+  const flightStream = renderFlightToReadableStream(
+    <App pathname={pathname} />,
+    bundlerConfig
+  );
   const [streamForRSC, streamForStore] = flightStream.tee();
 
   const rscStore = new RSCStore();
@@ -72,13 +77,17 @@ export async function renderToStream({
     </Suspense>
   );
 
-  const cache = new ServerCache();
+  const history = createMemoryHistory({ initialEntries: [pathname] });
 
   const el = (
     <div id="app">
-      <CacheContext.Provider value={cache}>
-        <RSCRoot />
-      </CacheContext.Provider>
+      <HistoryContext.Provider value={history}>
+        <LocationContext.Provider
+          value={{ location: history.location, isPending: false }}
+        >
+          <RSCRoot />
+        </LocationContext.Provider>
+      </HistoryContext.Provider>
     </div>
   );
 
@@ -87,7 +96,6 @@ export async function renderToStream({
   return await new Promise<RenderResult>((resolve, reject) => {
     let shouldInjectHead = false;
 
-    let cacheInitialized = false;
     let flightInitialized = false;
     const injectTransform = new TransformStream<ArrayBuffer>({
       start(controller) {
@@ -110,15 +118,6 @@ export async function renderToStream({
         }
 
         let script = "";
-        // キャッシュの状態変化をクライアントに通知する
-        if (cache.hasChanges()) {
-          const changes = cache.flushChangedState();
-          if (!cacheInitialized) {
-            script += "var __cache=[];";
-            cacheInitialized = true;
-          }
-          script += `__cache.push(${JSON.stringify(changes)});`;
-        }
 
         if (rscStore.hasUnreleasedRow) {
           if (!flightInitialized) {
