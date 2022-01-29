@@ -66,7 +66,7 @@ const rscPlugin = (): Plugin => {
         );
         const importPrefix = pathFromImporterToRoot + "/";
         const glob = `"${importPrefix}${CLIENT_COMPONENT_GLOB}"`;
-        const importMap = options.ssr
+        const importMap = options?.ssr
           ? `import.meta.globEager(${glob})`
           : `import.meta.glob(${glob})`;
 

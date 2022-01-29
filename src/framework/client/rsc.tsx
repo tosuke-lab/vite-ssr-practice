@@ -6,6 +6,7 @@ import {
   FlightResponse,
 } from "react-server-dom-webpack";
 import { useRoute, LocationContext } from "../shared/router";
+import { useDataResource, Resource } from "../../lib/data";
 
 const textEncoder = new TextEncoder();
 const initialResponse = createFromReadableStream(
@@ -24,8 +25,6 @@ const initialResponse = createFromReadableStream(
   })
 );
 
-const responseCache = new Map<string, FlightResponse>();
-
 function useFlightResponse(location: Location) {
   const [isMount, setIsMount] = useState(false);
   useEffect(() => {
@@ -34,24 +33,28 @@ function useFlightResponse(location: Location) {
 
   const key = location.pathname;
 
-  let response = responseCache.get(key);
-  if (response == null) {
+  const responseResource = useDataResource(`/__flight__${key}`, async () => {
     if (isMount) {
-      response = createFromFetch(fetch(location.pathname + ".flight"));
+      return createFromFetch(fetch(location.pathname + ".flight"));
     } else {
-      response = initialResponse;
+      return initialResponse;
     }
-    responseCache.set(key, response);
-  }
+  });
 
-  return response;
+  return responseResource;
 }
 
 const FlightComponent = ({
   response,
 }: {
-  response: FlightResponse;
-}): JSX.Element => response.readRoot();
+  response: Resource<FlightResponse>;
+}): JSX.Element => response.read().readRoot();
+
+if (import.meta.hot) {
+  import.meta.hot.accept("/src/entry-server.tsx", () => {
+    console.log("reloading server");
+  });
+}
 
 export const FlightApp = (): JSX.Element => {
   const { location, isPending } = useRoute();

@@ -1,16 +1,17 @@
 import "./framework/server/webpack-chunk-loader-polyfill";
-import {
-  renderFlightToReadableStream,
-  renderToReadableStream,
-} from "./framework/server/renderToReadableStream";
+import { TransformStream } from "web-streams-polyfill/ponyfill/es2018";
 import { Suspense } from "react";
 import { createFromReadableStream } from "react-server-dom-webpack";
 import type { BundlerConfig } from "react-server-dom-webpack/writer.node.server";
 import { createMemoryHistory } from "history";
-import { App } from "./App.server";
+import { HelmetData, HelmetProvider } from "react-helmet-async";
+import {
+  renderFlightToReadableStream,
+  renderToReadableStream,
+} from "./framework/server/renderToReadableStream";
 import { RSCStore } from "./framework/server/rsc";
-import { TransformStream } from "web-streams-polyfill/ponyfill/es2018";
 import { HistoryContext, LocationContext } from "./framework/shared/router";
+import { App } from "./App.server";
 
 const bundlerConfig = new Proxy(
   {} as { [filepath: string | symbol]: unknown },
@@ -78,16 +79,19 @@ export async function renderToStream({
   );
 
   const history = createMemoryHistory({ initialEntries: [pathname] });
+  const helmetContext: { helmet?: HelmetData } = {};
 
   const el = (
     <div id="app">
-      <HistoryContext.Provider value={history}>
-        <LocationContext.Provider
-          value={{ location: history.location, isPending: false }}
-        >
-          <RSCRoot />
-        </LocationContext.Provider>
-      </HistoryContext.Provider>
+      <HelmetProvider context={helmetContext}>
+        <HistoryContext.Provider value={history}>
+          <LocationContext.Provider
+            value={{ location: history.location, isPending: false }}
+          >
+            <RSCRoot />
+          </LocationContext.Provider>
+        </HistoryContext.Provider>
+      </HelmetProvider>
     </div>
   );
 
@@ -103,8 +107,16 @@ export async function renderToStream({
       },
       transform(chunk, controller) {
         if (shouldInjectHead) {
-          const head =
-            '<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>';
+          let head = "";
+          head += `<meta charset="utf-8">`;
+          head += `<meta name="viewport" content="width=device-width, initial-scale=1">`;
+          const helmet = helmetContext.helmet;
+          if (helmet) {
+            head += helmet.title.toString();
+            head += helmet.meta.toString();
+            head += helmet.link.toString();
+          }
+
           controller.enqueue(textEncoder.encode(head));
           if (headElements) {
             controller.enqueue(textEncoder.encode(headElements));

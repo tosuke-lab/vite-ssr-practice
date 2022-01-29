@@ -18,6 +18,7 @@ specifiers:
   prettier: ^2.5.1
   react: ^0.0.0-experimental-529dc3ce8-20220124
   react-dom: ^0.0.0-experimental-529dc3ce8-20220124
+  react-helmet-async: ^1.2.2
   react-server-dom-webpack: ^0.0.0-experimental-529dc3ce8-20220124
   ts-node: ^10.4.0
   typescript: ^4.5.4
@@ -30,6 +31,7 @@ dependencies:
   nanoid: 3.2.0
   react: 0.0.0-experimental-529dc3ce8-20220124
   react-dom: 0.0.0-experimental-529dc3ce8-20220124_15c0ff226c754af78a705039ab3781b6
+  react-helmet-async: 1.2.2_091d98e8913bc4fa8e229ca1c7ed36a5
   react-server-dom-webpack: 0.0.0-experimental-529dc3ce8-20220124_091d98e8913bc4fa8e229ca1c7ed36a5
   web-streams-polyfill: 3.2.0
 
@@ -1208,6 +1210,12 @@ packages:
     resolution: {integrity: sha512-k/vGaX4/Yla3WzyMCvTQOXYeIHvqOKtnqBduzTHpzpQZzAskKMhZ2K+EnBiSM9zGSoIFeMpXKxa4dYeZIQqewQ==}
     dev: true
 
+  /invariant/2.2.4:
+    resolution: {integrity: sha512-phJfQVBuaJM5raOpJjSfkiD6BpbCE4Ns//LaXl6wGYtUBY83nWS6Rf9tXm2e8VaK60JEjYldbPif/A2B1C2gNA==}
+    dependencies:
+      loose-envify: 1.4.0
+    dev: false
+
   /ipaddr.js/1.9.1:
     resolution: {integrity: sha512-0KI/607xoxSToH7GjN1FfSbLoU0+btTicjsQSWQlh/hZykN8KpmMf7uYwPW3R+akZ6R/w18ZlXSHBYXiYUPO3g==}
     engines: {node: '>= 0.10'}
@@ -1467,6 +1475,14 @@ packages:
     hasBin: true
     dev: true
 
+  /prop-types/15.8.1:
+    resolution: {integrity: sha512-oj87CgZICdulUohogVAR7AjlC0327U4el4L6eAvOqCeudMDVU0NThNaV+b9Df4dXgSP1gXMTnPdhfe/2qDH5cg==}
+    dependencies:
+      loose-envify: 1.4.0
+      object-assign: 4.1.1
+      react-is: 16.13.1
+    dev: false
+
   /proxy-addr/2.0.7:
     resolution: {integrity: sha512-llQsMLSUDUPT44jdrU/O37qlnifitDP+ZwrmmZcoSKyLKvtZxpyV0n2/bD/N4tBAAZ/gJEdZU7KMraoK1+XYAg==}
     engines: {node: '>= 0.10'}
@@ -1504,6 +1520,29 @@ packages:
       object-assign: 4.1.1
       react: 0.0.0-experimental-529dc3ce8-20220124
       scheduler: 0.0.0-experimental-529dc3ce8-20220124
+    dev: false
+
+  /react-fast-compare/3.2.0:
+    resolution: {integrity: sha512-rtGImPZ0YyLrscKI9xTpV8psd6I8VAtjKCzQDlzyDvqJA8XOW78TXYQwNRNd8g8JZnDu8q9Fu/1v4HPAVwVdHA==}
+    dev: false
+
+  /react-helmet-async/1.2.2_091d98e8913bc4fa8e229ca1c7ed36a5:
+    resolution: {integrity: sha512-XgSQezeCbLfCxdZhDA3T/g27XZKnOYyOkruopTLSJj8RvFZwdXnM4djnfYaiBSDzOidDgTo1jcEozoRu/+P9UQ==}
+    peerDependencies:
+      react: ^16.6.0 || ^17.0.0
+      react-dom: ^16.6.0 || ^17.0.0
+    dependencies:
+      '@babel/runtime': 7.16.7
+      invariant: 2.2.4
+      prop-types: 15.8.1
+      react: 0.0.0-experimental-529dc3ce8-20220124
+      react-dom: 0.0.0-experimental-529dc3ce8-20220124_15c0ff226c754af78a705039ab3781b6
+      react-fast-compare: 3.2.0
+      shallowequal: 1.1.0
+    dev: false
+
+  /react-is/16.13.1:
+    resolution: {integrity: sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==}
     dev: false
 
   /react-refresh/0.11.0:
@@ -1635,6 +1674,10 @@ packages:
   /setprototypeof/1.2.0:
     resolution: {integrity: sha512-E5LDX7Wrp85Kil5bhZv46j8jOeboKq5JMmYM3gVGdGH8xFpPWXUMsNrlODCrkoxMEeNi/XZIwuRvY4XNwYMJpw==}
     dev: true
+
+  /shallowequal/1.1.0:
+    resolution: {integrity: sha512-y0m1JoUZSlPAjXVtPPW70aZWfIL/dSP7AFkRnniLCrK/8MDKog3TySTBmckD+RObVxH0v4Tox67+F14PdED2oQ==}
+    dev: false
 
   /source-map-js/1.0.1:
     resolution: {integrity: sha512-4+TN2b3tqOCd/kaGRJ/sTYA0tR0mdXx26ipdolxcwtJVqEnqNYvlCAt1q3ypy4QMlYus+Zh34RNtYLoq2oQ4IA==}

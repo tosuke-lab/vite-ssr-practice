@@ -43,15 +43,24 @@ class ClientResource<T> implements Resource<T> {
 
 const getCache = () => new Map<string, Resource<unknown>>();
 
-export function useData<Key extends string, T>(
+export { type Resource } from "../../framework/shared/cache";
+
+export function useDataResource<Key extends string, T>(
   key: Key,
   fetcher: Fetcher<Key, T>
-): T {
+): Resource<T> {
   const cache = unstable_getCacheForType(getCache);
   let resource = cache.get(key) as Resource<T> | undefined;
   if (resource == null) {
     resource = ClientResource.fromPromise(fetcher(key));
     cache.set(key, resource);
   }
+  return resource;
+}
+export function useData<Key extends string, T>(
+  key: Key,
+  fetcher: Fetcher<Key, T>
+): T {
+  const resource = useDataResource(key, fetcher);
   return resource.read();
 }

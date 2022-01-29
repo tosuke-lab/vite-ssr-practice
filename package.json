@@ -8,7 +8,7 @@
   "scripts": {
     "dev": "node --conditions react-server --loader ts-node/esm src/server.dev.ts",
     "dev-miniflare": "miniflare dist/server/server.worker.js --site dist/client",
-    "build:client": "vite build --outDir dist/client --manifest --ssrManifest",
+    "build:client": "vite build --outDir dist/client --manifest",
     "build:server:worker": "vite build --outDir dist/server --ssr src/server.worker.ts"
   },
   "repository": {
@@ -27,6 +27,7 @@
     "nanoid": "^3.2.0",
     "react": "^0.0.0-experimental-529dc3ce8-20220124",
     "react-dom": "^0.0.0-experimental-529dc3ce8-20220124",
+    "react-helmet-async": "^1.2.2",
     "react-server-dom-webpack": "^0.0.0-experimental-529dc3ce8-20220124",
     "web-streams-polyfill": "^3.2.0"
   },
