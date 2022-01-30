@@ -1,4 +1,4 @@
-import { Plugin, normalizePath, transformWithEsbuild } from "vite";
+import { Plugin, normalizePath } from "vite";
 import fs from "fs/promises";
 import path from "path";
 import MagicString from "magic-string";
@@ -12,7 +12,7 @@ export const serverComponents = (): Plugin => {
 
   // Server Component or Shared Component which required by Server Component
   const isServerModeComponent = (id: string) =>
-    isServerComponent(id) || id.endsWith("?server");
+    isServerComponent(id) || (id?.endsWith("?server") ?? false);
 
   return {
     name: "vite-plugin-react-server-components",
@@ -22,21 +22,24 @@ export const serverComponents = (): Plugin => {
     },
     async resolveId(source, importer, options) {
       if (options?.ssr) {
-        if (isServerModeComponent(importer) && isClientComponent(source)) {
+        if (isServerModeComponent(importer)) {
           const resolution = await this.resolve(source, importer, {
             skipSelf: true,
             ...options,
           });
-          if (resolution == null || resolution.external) return resolution;
-          return `${resolution.id}?flight`;
-        }
-        if (isServerModeComponent(importer) && !isServerComponent(source)) {
-          const resolution = await this.resolve(source, importer, {
-            skipSelf: true,
-            ...options,
-          });
-          if (resolution == null || resolution.external) return resolution;
-          return `${resolution.id}?server`;
+          if (
+            resolution == null ||
+            resolution.external ||
+            resolution.id.startsWith("\x00") ||
+            resolution.id.includes("node_modules")
+          )
+            return resolution;
+          if (isClientComponent(source)) {
+            return `${resolution.id}?flight`;
+          }
+          if (!isServerComponent(source)) {
+            return `${resolution.id}?server`;
+          }
         }
       }
     },
@@ -47,31 +50,10 @@ export const serverComponents = (): Plugin => {
       }
       if (id.endsWith("?flight")) {
         const originalId = id.slice(0, -"?flight".length);
-        const source = await fs.readFile(originalId, "utf8");
-        const { code: transformed } = await transformWithEsbuild(source, id);
-        await esModuleLexer.init;
-        const exports = esModuleLexer.parse(transformed)[1];
-        const filepath = normalizePath(path.relative(config.root, originalId));
-
-        let src = "";
-        src +=
-          'const MODULE_REFERENCE = Symbol.for("react.module.reference");\n';
-        src += `const FILEPATH = ${JSON.stringify(filepath)};\n`;
-        for (const name of exports) {
-          src += "export ";
-          if (name === "default") {
-            src += "default ";
-          } else {
-            src += `const ${name} = `;
-          }
-          src += "{ $$typeof: MODULE_REFERENCE, filepath: FILEPATH, name: ";
-          src += JSON.stringify(name);
-          src += "};\n";
-        }
-        return src;
+        return await fs.readFile(originalId, "utf8");
       }
     },
-    transform(code, id, options) {
+    async transform(code, id, options) {
       if (id.endsWith("webpack-chunk-loader-polyfill.js")) {
         const CLIENT_COMPONENT_GLOB = "**/*.client.[jt]s(x)?";
 
@@ -99,6 +81,31 @@ export const serverComponents = (): Plugin => {
         return {
           code: String(s),
           map: s.generateMap(),
+        };
+      }
+      if (id.endsWith("?flight")) {
+        const originalId = id.slice(0, -"?flight".length);
+        await esModuleLexer.init;
+        const [_imports, exports] = esModuleLexer.parse(code);
+        const filepath = normalizePath(path.relative(config.root, originalId));
+        let src = "";
+        src +=
+          'const MODULE_REFERENCE = Symbol.for("react.module.reference");\n';
+        src += `const FILEPATH = ${JSON.stringify(filepath)};\n`;
+        for (const name of exports) {
+          src += "export ";
+          if (name === "default") {
+            src += "default ";
+          } else {
+            src += `const ${name} = `;
+          }
+          src += "{ $$typeof: MODULE_REFERENCE, filepath: FILEPATH, name: ";
+          src += JSON.stringify(name);
+          src += "};\n";
+        }
+        return {
+          code: src,
+          map: null,
         };
       }
     },
