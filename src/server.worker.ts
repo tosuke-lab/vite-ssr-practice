@@ -55,6 +55,17 @@ async function handleRequest(event: FetchEvent) {
 async function handleAsset(event: FetchEvent, url: URL) {
   try {
     const response = await getAssetFromKV(event, {});
+
+    if (response.status < 400) {
+      const filename = url.pathname.split("/").pop();
+      if (filename != null) {
+        const maxAge =
+          filename.split(".").length > 2 ? 60 * 60 * 24 * 365 : 60 * 60;
+
+        response.headers.set("Cache-Control", `public, max-age=${maxAge}`);
+      }
+    }
+
     return response;
   } catch (e) {
     const pathname = url.pathname;

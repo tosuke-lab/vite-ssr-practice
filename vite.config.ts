@@ -121,7 +121,7 @@ export default defineConfig((env) => {
       sourcemap: prod ? "hidden" : true,
       rollupOptions: {
         plugins: [
-          process.env.ALALYZE !== "" &&
+          /^yes|true$/i.test(process.env.ALALYZE) &&
             visualizer({
               open: true,
               filename: "dist/stats.html",
