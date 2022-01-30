@@ -5,7 +5,7 @@ import { getAssetFromKV } from "@cloudflare/kv-asset-handler";
 async function handleRequest(event: FetchEvent) {
   const url = new URL(event.request.url);
 
-  if (/\.(js|css|ico)$/.test(url.pathname)) {
+  if (/\.(js|css|map|ico)$/.test(url.pathname)) {
     return await handleAsset(event, url);
   }
 

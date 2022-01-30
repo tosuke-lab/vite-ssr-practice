@@ -13,6 +13,10 @@ import { RSCStore, ViteManifest } from "./framework/server/rsc";
 import { HistoryContext, LocationContext } from "./framework/shared/router";
 import { App } from "./app.server";
 
+if (import.meta.hot) {
+  import.meta.hot.accept();
+}
+
 const bundlerConfig = new Proxy(
   {} as { [filepath: string | symbol]: unknown },
   {
@@ -34,7 +38,6 @@ type RenderOptions = {
   readonly viteManifest: ViteManifest;
   readonly pathname: string;
   readonly searchParams: URLSearchParams;
-  readonly headElements?: string;
   readonly bodyElements?: string;
 };
 
@@ -49,7 +52,6 @@ export async function renderToStream({
   viteManifest,
   pathname,
   searchParams,
-  headElements,
   bodyElements,
 }: RenderOptions): Promise<RenderResult> {
   if (pathname.endsWith(".flight")) {

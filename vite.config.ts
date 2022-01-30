@@ -16,7 +16,13 @@ export default defineConfig((env) => {
       viteReact(),
       serverComponents(),
       granularChunk({
-        react: ["react", "react-dom", "react-server-dom-webpack", "scheduler"],
+        react: [
+          "react",
+          "react-dom",
+          "react-server-dom-webpack",
+          "scheduler",
+          "object-assign",
+        ],
       }),
     ],
     ssr: {
@@ -38,7 +44,7 @@ export default defineConfig((env) => {
     },
     build: {
       minify: prod,
-      sourcemap: prod ? "hidden" : true,
+      sourcemap: true,
       rollupOptions: {
         plugins: [
           /^yes|true$/i.test(process.env.ANALYZE) &&

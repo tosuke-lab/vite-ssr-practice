@@ -7,7 +7,7 @@ workers_dev = true
 [site]
 bucket = "./dist/client"
 entry-point = "./dist/server"
-exclude = ["*.map", "*.json", "*.html"]
+exclude = ["*.json", "*.html"]
 
 [build]
 command = "pnpm run build:client && pnpm run build:server:worker && cp wrangler/package.json dist/server"
