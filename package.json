@@ -7,7 +7,6 @@
   "type": "module",
   "scripts": {
     "dev": "node --conditions react-server --loader ts-node/esm src/server.dev.ts",
-    "dev-miniflare": "miniflare dist/server/server.worker.js --site dist/client",
     "build:client": "vite build --outDir dist/client --manifest",
     "build:server:worker": "vite build --outDir dist/server --ssr src/server.worker.ts",
     "deploy": "wrangler publish"
@@ -43,11 +42,11 @@
     "es-module-lexer": "^0.9.3",
     "express": "^4.17.2",
     "magic-string": "^0.25.7",
-    "miniflare": "2.2.0",
     "prettier": "^2.5.1",
+    "rollup": "^2.66.1",
     "rollup-plugin-visualizer": "^5.5.4",
     "ts-node": "^10.4.0",
     "typescript": "^4.5.4",
-    "vite": "^2.7.13"
+    "vite": "^2.8.0-beta.3"
   }
 }
