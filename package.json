@@ -44,6 +44,7 @@
     "magic-string": "^0.25.7",
     "miniflare": "2.2.0",
     "prettier": "^2.5.1",
+    "rollup-plugin-visualizer": "^5.5.4",
     "ts-node": "^10.4.0",
     "typescript": "^4.5.4",
     "vite": "^2.7.13"

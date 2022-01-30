@@ -1,4 +1,4 @@
-import ReactDOM from "react-dom/server.browser.js";
+import ReactDOM from "react-dom/server";
 import { WritableStream } from "web-streams-polyfill/ponyfill/es2018";
 
 export interface ViteManifest {

@@ -1,5 +1,6 @@
 import { defineConfig, UserConfig } from "vite";
 import viteReact from "@vitejs/plugin-react";
+import { visualizer } from "rollup-plugin-visualizer";
 
 import { Plugin, normalizePath, transformWithEsbuild } from "vite";
 import fs from "fs/promises";
@@ -103,7 +104,7 @@ export default defineConfig((env) => {
         env.command !== "build"
           ? ["react-server-dom-webpack/writer.node.server"]
           : undefined,
-      noExternal: env.command === "build",
+      noExternal: env.command !== "serve",
       target: "webworker",
     },
     resolve: {
@@ -118,6 +119,17 @@ export default defineConfig((env) => {
     build: {
       minify: prod,
       sourcemap: prod ? "hidden" : true,
+      rollupOptions: {
+        plugins: [
+          process.env.ALALYZE !== "" &&
+            visualizer({
+              open: true,
+              filename: "dist/stats.html",
+              gzipSize: true,
+              brotliSize: true,
+            }),
+        ],
+      },
     },
   });
 
