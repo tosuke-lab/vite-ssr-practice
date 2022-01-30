@@ -54,16 +54,23 @@ async function handleRequest(event: FetchEvent) {
 
 async function handleAsset(event: FetchEvent, url: URL) {
   try {
-    const response = await getAssetFromKV(event, {});
+    const filename = url.pathname.split("/").pop();
+    const immutable = (filename?.split(".").length ?? -1) > 2;
+    const ttl = immutable ? 60 * 60 * 24 * 365 : 60 * 60 * 24;
 
-    if (response.status < 400) {
-      const filename = url.pathname.split("/").pop();
-      if (filename != null) {
-        const maxAge =
-          filename.split(".").length > 2 ? 60 * 60 * 24 * 365 : 60 * 60;
+    const response = await getAssetFromKV(event, {
+      cacheControl: {
+        browserTTL: ttl,
+        edgeTTL: ttl,
+        bypassCache: import.meta.env.DEV,
+      },
+    });
 
-        response.headers.set("Cache-Control", `public, max-age=${maxAge}`);
-      }
+    if (response.status < 400 && immutable) {
+      response.headers.set(
+        "Cache-Control",
+        response.headers.get("Cache-Control") + ", immutable"
+      );
     }
 
     return response;

@@ -46,10 +46,7 @@ export class RSCStore {
         elements.push(<script async crossOrigin="" type="module" src={src} />);
       } else {
         elements.push(
-          <>
-            <link rel="modulepreload" as="script" crossOrigin="" href={src} />
-            <link rel="preload" as="script" crossOrigin="" href={src} />
-          </>
+          <link rel="modulepreload" as="script" crossOrigin="" href={src} />
         );
       }
 
