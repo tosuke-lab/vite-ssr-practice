@@ -9,7 +9,8 @@
     "dev": "node --conditions react-server --loader ts-node/esm src/server.dev.ts",
     "dev-miniflare": "miniflare dist/server/server.worker.js --site dist/client",
     "build:client": "vite build --outDir dist/client --manifest",
-    "build:server:worker": "vite build --outDir dist/server --ssr src/server.worker.ts"
+    "build:server:worker": "vite build --outDir dist/server --ssr src/server.worker.ts",
+    "deploy": "wrangler publish"
   },
   "repository": {
     "type": "git",
