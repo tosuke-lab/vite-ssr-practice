@@ -8,26 +8,46 @@ export const serverComponents = (): Plugin => {
   let config: Parameters<NonNullable<Plugin["configResolved"]>>[0];
 
   const isServerComponent = (id: string) => /\.server(\.[jt]sx?)?$/.test(id);
+  const isClientComponent = (id: string) => /\.client(\.[jt]sx?)?$/.test(id);
+
+  // ServerComponent or Shared Component which required by Server Component
+  const isServerModeComponent = (id: string) =>
+    isServerComponent(id) || id.endsWith("?server");
 
   return {
     name: "vite-plugin-react-server-components",
+    enforce: "pre",
     configResolved(c) {
       config = c;
     },
     async resolveId(source, importer, options) {
-      if (/\.client(\.[jt]sx?)?$/.test(source) && isServerComponent(importer)) {
-        const resolution = await this.resolve(source, importer, {
-          skipSelf: true,
-          ...options,
-        });
-        if (resolution == null || resolution.external) return resolution;
-        return `${resolution.id}?flight`;
+      if (options?.ssr) {
+        if (isServerModeComponent(importer) && isClientComponent(source)) {
+          const resolution = await this.resolve(source, importer, {
+            skipSelf: true,
+            ...options,
+          });
+          if (resolution == null || resolution.external) return resolution;
+          return `${resolution.id}?flight`;
+        }
+        if (isServerComponent(importer) && !isServerComponent(source)) {
+          const resolution = await this.resolve(source, importer, {
+            skipSelf: true,
+            ...options,
+          });
+          if (resolution == null || resolution.external) return resolution;
+          return `${resolution.id}?server`;
+        }
       }
     },
     async load(id) {
+      if (id.endsWith("?server")) {
+        const originalId = id.slice(0, -"?server".length);
+        return await fs.readFile(originalId, "utf8");
+      }
       if (id.endsWith("?flight")) {
         const originalId = id.slice(0, -"?flight".length);
-        const source = await fs.readFile(originalId, { encoding: "utf8" });
+        const source = await fs.readFile(originalId, "utf8");
         const { code: transformed } = await transformWithEsbuild(source, id);
         await esModuleLexer.init;
         const exports = esModuleLexer.parse(transformed)[1];
