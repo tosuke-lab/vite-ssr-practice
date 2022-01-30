@@ -10,7 +10,7 @@ export const serverComponents = (): Plugin => {
   const isServerComponent = (id: string) => /\.server(\.[jt]sx?)?$/.test(id);
   const isClientComponent = (id: string) => /\.client(\.[jt]sx?)?$/.test(id);
 
-  // ServerComponent or Shared Component which required by Server Component
+  // Server Component or Shared Component which required by Server Component
   const isServerModeComponent = (id: string) =>
     isServerComponent(id) || id.endsWith("?server");
 
@@ -30,7 +30,7 @@ export const serverComponents = (): Plugin => {
           if (resolution == null || resolution.external) return resolution;
           return `${resolution.id}?flight`;
         }
-        if (isServerComponent(importer) && !isServerComponent(source)) {
+        if (isServerModeComponent(importer) && !isServerComponent(source)) {
           const resolution = await this.resolve(source, importer, {
             skipSelf: true,
             ...options,
