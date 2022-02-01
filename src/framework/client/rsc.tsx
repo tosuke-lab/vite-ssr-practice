@@ -35,7 +35,7 @@ function useFlightResponse(location: Location) {
 
   const responseResource = useDataResource(`/__flight__${key}`, async () => {
     if (import.meta.env.DEV || isMount) {
-      return createFromFetch(fetch(location.pathname + ".flight"));
+      return createFromFetch(fetch(location.pathname + "?flight"));
     } else {
       return initialResponse;
     }

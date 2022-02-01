@@ -5,11 +5,13 @@ import MagicString from "magic-string";
 import * as esModuleLexer from "es-module-lexer";
 import { PluginContext } from "rollup";
 
-const isServerComponent = (id: string) => /\.server(\.[jt]sx?)?$/.test(id);
-const isClientComponent = (id: string) => /\.client(\.[jt]sx?)?$/.test(id);
+const isServerComponent = (id?: string) =>
+  id && /\.server(\.[jt]sx?)?$/.test(id);
+const isClientComponent = (id?: string) =>
+  id && /\.client(\.[jt]sx?)?$/.test(id);
 // Server Component or Shared Component which required by Server Component
-const isServerModeComponent = (id: string) =>
-  isServerComponent(id) || (id?.endsWith("?server") ?? false);
+const isServerModeComponent = (id?: string) =>
+  isServerComponent(id) || (id?.endsWith("?flight-server") ?? false);
 
 export const serverComponents = (): Plugin[] => {
   const name = "vite-server-components";
@@ -41,20 +43,20 @@ export const serverComponents = (): Plugin[] => {
             return resolution;
           }
           if (isClientComponent(source)) {
-            return options?.ssr ? `${resolution.id}?flight` : resolution;
+            return options?.ssr ? `${resolution.id}?flight-client` : resolution;
           }
           if (!isServerComponent(source)) {
-            return `${resolution.id}?server`;
+            return `${resolution.id}?flight-server`;
           }
         }
       },
       async load(id) {
-        if (id.endsWith("?server")) {
-          const originalId = id.slice(0, -"?server".length);
+        if (id.endsWith("?flight-server")) {
+          const originalId = id.slice(0, -"?flight-server".length);
           return await fs.readFile(originalId, "utf8");
         }
-        if (id.endsWith("?flight")) {
-          const originalId = id.slice(0, -"?flight".length);
+        if (id.endsWith("?flight-client")) {
+          const originalId = id.slice(0, -"?flight-client".length);
           return await fs.readFile(originalId, "utf8");
         }
       },
@@ -71,8 +73,8 @@ export const serverComponents = (): Plugin[] => {
             config.root
           );
         }
-        if (options?.ssr && id.endsWith("?flight")) {
-          const originalId = id.slice(0, -"?flight".length);
+        if (options?.ssr && id.endsWith("?flight-client")) {
+          const originalId = id.slice(0, -"?flight-client".length);
           return await transformClientComponentFromServerComponent(
             code,
             originalId,
@@ -188,7 +190,7 @@ async function transformServerComponentInClient(
 
     const resolution = await resolve(name, id);
 
-    if (resolution.id.endsWith("?server")) {
+    if (resolution?.id.endsWith("?flight-server")) {
       s.overwrite(item.ss, item.se, `import ${JSON.stringify(name)};`);
       lastIndex = item.se;
     } else if (isClientComponent(name)) {

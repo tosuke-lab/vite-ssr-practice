@@ -54,21 +54,19 @@ export async function renderToStream({
   searchParams,
   bodyElements,
 }: RenderOptions): Promise<RenderResult> {
-  if (pathname.endsWith(".flight")) {
-    const stream = renderFlightToReadableStream(
-      <App pathname={pathname.slice(0, -".flight".length)} />,
-      bundlerConfig
-    );
-    return {
-      statusCode: 200,
-      stream: stream,
-      headers: {},
-    };
-  }
   const flightStream = renderFlightToReadableStream(
     <App pathname={pathname} />,
     bundlerConfig
   );
+
+  if (searchParams.has("flight")) {
+    return {
+      statusCode: 200,
+      stream: flightStream,
+      headers: {},
+    };
+  }
+
   const [streamForRSC, streamForStore] = flightStream.tee();
 
   const rscStore = new RSCStore(viteManifest);
