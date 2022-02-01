@@ -52,12 +52,12 @@ export const serverComponents = (): Plugin[] => {
       },
       async load(id) {
         if (id.endsWith("?flight-server")) {
-          const originalId = id.slice(0, -"?flight-server".length);
-          return await fs.readFile(originalId, "utf8");
+          const actualId = id.slice(0, -"?flight-server".length);
+          return await fs.readFile(actualId, "utf8");
         }
         if (id.endsWith("?flight-client")) {
-          const originalId = id.slice(0, -"?flight-client".length);
-          return await fs.readFile(originalId, "utf8");
+          const actualId = id.slice(0, -"?flight-client".length);
+          return await fs.readFile(actualId, "utf8");
         }
       },
     },
