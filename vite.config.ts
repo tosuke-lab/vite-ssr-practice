@@ -40,6 +40,10 @@ export default defineConfig((env) => {
           find: "react-dom/server",
           replacement: "/aliases/react-dom-server.cjs",
         },
+        {
+          find: "nano-jsx/jsx-dev-runtime",
+          replacement: "nano-jsx/jsx-runtime",
+        },
       ],
     },
     build: {

@@ -1,5 +1,14 @@
-import ReactDOM from "react-dom/server";
+import { escape } from "html-escaper";
 import { WritableStream } from "web-streams-polyfill/ponyfill/es2018";
+
+const html = (
+  template: TemplateStringsArray,
+  ...placeholders: string[]
+): string =>
+  template.reduce((acc, str, i) => {
+    const p = placeholders[i];
+    return acc + str + (p ? escape(p) : "");
+  }, "");
 
 export interface ViteManifest {
   [id: string]: {
@@ -31,7 +40,7 @@ export class RSCStore {
 
   dependencies(entryFile: string) {
     const seen = new Set<string>();
-    let elements: React.ReactElement[] = [];
+    let elements: string[] = [];
 
     const collect = (id: string) => {
       if (seen.has(id)) return;
@@ -43,10 +52,14 @@ export class RSCStore {
       const src = "/" + entry.file;
 
       if (entry.isEntry) {
-        elements.push(<script async crossOrigin="" type="module" src={src} />);
+        elements.push(
+          // prettier-ignore
+          html`<script async crossorigin type="module" src="${src}"></script>`
+        );
       } else {
         elements.push(
-          <link rel="modulepreload" as="script" crossOrigin="" href={src} />
+          // prettier-ignore
+          html`<link rel="modulepreload" as="script" crossorigin href="${src}"/>`
         );
       }
 
@@ -58,7 +71,7 @@ export class RSCStore {
     collect(entryFile);
     this._deps.forEach(collect);
 
-    return ReactDOM.renderToStaticMarkup(<>{elements}</>);
+    return elements.join("");
   }
 
   releaseRows() {

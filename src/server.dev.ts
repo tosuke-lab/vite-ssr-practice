@@ -1,6 +1,10 @@
 import fs from "node:fs/promises";
+import webstream from "node:stream/web";
 import { createServer as createViteServer } from "vite";
 import express from "express";
+
+globalThis.ReadableStream = webstream.ReadableStream as any;
+globalThis.WritableStream = webstream.WritableStream as any;
 
 async function createServer() {
   const app = express();

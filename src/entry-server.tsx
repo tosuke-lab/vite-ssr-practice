@@ -114,7 +114,7 @@ export async function renderToStream({
           head += `<meta name="viewport" content="width=device-width, initial-scale=1">`;
 
           // Load dependencies
-          if (import.meta.env.PROD) {
+          if (true || import.meta.env.PROD) {
             head += rscStore.dependencies("index.html");
           }
 
@@ -168,7 +168,6 @@ export async function renderToStream({
         controller.enqueue(textEncoder.encode(html));
       },
     });
-
     const readable = renderToReadableStream(el, {
       signal,
       onError(error) {
