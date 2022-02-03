@@ -16,6 +16,7 @@ specifiers:
   html-escaper: ^3.0.3
   magic-string: ^0.25.7
   nanoid: ^3.2.0
+  path-to-regexp: ^6.2.0
   prettier: ^2.5.1
   react: ^0.0.0-experimental-529dc3ce8-20220124
   react-dom: ^0.0.0-experimental-529dc3ce8-20220124
@@ -24,6 +25,7 @@ specifiers:
   rollup: ^2.66.1
   rollup-plugin-visualizer: ^5.5.4
   ts-node: ^10.4.0
+  typed-url-params: ^1.0.1
   typescript: ^4.5.4
   vite: ^2.8.0-beta.3
   web-streams-polyfill: ^3.2.0
@@ -33,10 +35,12 @@ dependencies:
   history: 5.2.0
   html-escaper: 3.0.3
   nanoid: 3.2.0
+  path-to-regexp: 6.2.0
   react: 0.0.0-experimental-529dc3ce8-20220124
   react-dom: 0.0.0-experimental-529dc3ce8-20220124_15c0ff226c754af78a705039ab3781b6
   react-helmet-async: 1.2.2_091d98e8913bc4fa8e229ca1c7ed36a5
   react-server-dom-webpack: 0.0.0-experimental-529dc3ce8-20220124_091d98e8913bc4fa8e229ca1c7ed36a5
+  typed-url-params: 1.0.1
   web-streams-polyfill: 3.2.0
 
 devDependencies:
@@ -1294,6 +1298,10 @@ packages:
     resolution: {integrity: sha1-32BBeABfUi8V60SQ5yR6G/qmf4w=}
     dev: true
 
+  /path-to-regexp/6.2.0:
+    resolution: {integrity: sha512-f66KywYG6+43afgE/8j/GoiNyygk/bnoCbps++3ErRKsIYkGGupyv07R2Ok5m9i67Iqc+T2g1eAUGUPzWhYTyg==}
+    dev: false
+
   /picocolors/1.0.0:
     resolution: {integrity: sha512-1fygroTLlHu66zi26VoTDv8yRgm0Fccecssto+MhsZ0D/DGW2sm8E8AjW7NU5VVTRt5GxbeZ5qBuJr+HyLYkjQ==}
     dev: true
@@ -1636,6 +1644,10 @@ packages:
       media-typer: 0.3.0
       mime-types: 2.1.34
     dev: true
+
+  /typed-url-params/1.0.1:
+    resolution: {integrity: sha512-762imXO+myoSDHD9+YxUfSmfT0yGH1j+3s9UJ6uqKkOYIwHH6/gsFo67ZoST0Ey/RSoaps1zGu1N+eiuuCxfeg==}
+    dev: false
 
   /typescript/4.5.4:
     resolution: {integrity: sha512-VgYs2A2QIRuGphtzFV7aQJduJ2gyfTljngLzjpfW9FoYZF6xuw1W0vW9ghCKLfcWrCFxK81CSGRAvS1pn4fIUg==}

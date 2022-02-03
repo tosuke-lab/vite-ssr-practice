@@ -1,30 +1,22 @@
-import { Suspense } from "react";
-import { nanoid } from "nanoid";
-import { Counter } from "./components/counter.client";
-import { Slow } from "./components/slow";
-import { Link } from "./lib/link.client";
+import { createElement } from "react";
 import { Head } from "./lib/head.client";
+import { createRouter } from "./lib/router/builder";
+import { routes } from "./routes";
+import { Location } from "history";
 
-export const App = ({ pathname }: { pathname: string }): JSX.Element => {
-  const path = `path${Math.floor(Math.random() * 100)}`;
+const router = createRouter(routes);
+
+export const App = ({ location }: { location: Location }): JSX.Element => {
+  const matchResult = router.match(location);
+  if (matchResult) {
+    return createElement(matchResult.action.component, matchResult.result);
+  }
   return (
     <>
       <Head>
-        <title>Path: {pathname}</title>
+        <title>NotFound</title>
       </Head>
-      <h1>Page: {pathname}</h1>
-      <Counter />
-      <Slow ms={500}>
-        <p>Data1</p>
-      </Slow>
-      <Suspense key={nanoid()} fallback={<p>loading 2000 ms</p>}>
-        <Slow ms={2000}>
-          <p>Data2</p>
-        </Slow>
-      </Suspense>
-      <p>
-        <Link href={`/${path}`}>Go to /{path}</Link>
-      </p>
+      <h1>ないよ!!!!</h1>
     </>
   );
 };

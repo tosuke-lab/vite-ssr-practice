@@ -1,11 +1,13 @@
 import { parsePath } from "history";
 import React, { useContext } from "react";
-import { HistoryContext } from "../framework/shared/router";
+import { HistoryContext } from "../../framework/shared/router";
 
-export const Link = ({
+export const UnsafeLink = ({
   children,
   href,
-}: React.PropsWithChildren<{ href: string }>): JSX.Element => {
+}: React.PropsWithChildren<{
+  href: string;
+}>): JSX.Element => {
   const history = useContext(HistoryContext)!;
 
   const handleClick: React.MouseEventHandler = (ev) => {

@@ -26,10 +26,12 @@
     "history": "^5.2.0",
     "html-escaper": "^3.0.3",
     "nanoid": "^3.2.0",
+    "path-to-regexp": "^6.2.0",
     "react": "^0.0.0-experimental-529dc3ce8-20220124",
     "react-dom": "^0.0.0-experimental-529dc3ce8-20220124",
     "react-helmet-async": "^1.2.2",
     "react-server-dom-webpack": "^0.0.0-experimental-529dc3ce8-20220124",
+    "typed-url-params": "^1.0.1",
     "web-streams-polyfill": "^3.2.0"
   },
   "devDependencies": {

@@ -54,8 +54,10 @@ export async function renderToStream({
   searchParams,
   bodyElements,
 }: RenderOptions): Promise<RenderResult> {
+  const history = createMemoryHistory({ initialEntries: [pathname] });
+
   const flightStream = renderFlightToReadableStream(
-    <App pathname={pathname} />,
+    <App location={history.location} />,
     bundlerConfig
   );
 
@@ -80,7 +82,6 @@ export async function renderToStream({
     </Suspense>
   );
 
-  const history = createMemoryHistory({ initialEntries: [pathname] });
   const helmetContext: { helmet?: HelmetData } = {};
 
   const el = (
