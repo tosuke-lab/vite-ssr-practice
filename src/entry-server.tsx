@@ -12,6 +12,7 @@ import {
 import { RSCStore, ViteManifest } from "./framework/server/rsc";
 import { HistoryContext, LocationContext } from "./framework/shared/router";
 import { App } from "./app.server";
+import { StatusContext, StatusState } from "./framework/shared/status";
 
 if (import.meta.hot) {
   import.meta.hot.accept();
@@ -83,17 +84,20 @@ export async function renderToStream({
   );
 
   const helmetContext: { helmet?: HelmetData } = {};
+  const statusState: StatusState = {};
 
   const el = (
     <div id="app">
       <HelmetProvider context={helmetContext}>
-        <HistoryContext.Provider value={history}>
-          <LocationContext.Provider
-            value={{ location: history.location, isPending: false }}
-          >
-            <RSCRoot />
-          </LocationContext.Provider>
-        </HistoryContext.Provider>
+        <StatusContext.Provider value={statusState}>
+          <HistoryContext.Provider value={history}>
+            <LocationContext.Provider
+              value={{ location: history.location, isPending: false }}
+            >
+              <RSCRoot />
+            </LocationContext.Provider>
+          </HistoryContext.Provider>
+        </StatusContext.Provider>
       </HelmetProvider>
     </div>
   );
@@ -178,9 +182,10 @@ export async function renderToStream({
         shouldInjectHead = true;
         Promise.resolve().then(() => {
           resolve({
-            statusCode: 200,
+            statusCode: statusState.statusCode ?? 200,
             stream: readable,
             headers: {
+              ...statusState.headers,
               "content-type": "text/html",
             },
           });

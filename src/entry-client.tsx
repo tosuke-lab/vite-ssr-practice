@@ -10,6 +10,7 @@ import { FlightApp } from "./framework/client/rsc";
 import { HistoryContext } from "./framework/shared/router.js";
 import { HelmetProvider } from "react-helmet-async";
 import { App as ServerApp } from "./app.server";
+import { StatusContext } from "./framework/shared/status.js";
 
 const HMRUpdator: React.VFC = import.meta.env.DEV
   ? () => {
@@ -34,10 +35,12 @@ if (import.meta.hot) {
 
 const App = (): JSX.Element => (
   <HelmetProvider>
-    <HistoryContext.Provider value={browserHistory}>
-      <FlightApp />
-      {import.meta.env.DEV && <HMRUpdator />}
-    </HistoryContext.Provider>
+    <StatusContext.Provider value={{}}>
+      <HistoryContext.Provider value={browserHistory}>
+        <FlightApp />
+        {import.meta.env.DEV && <HMRUpdator />}
+      </HistoryContext.Provider>
+    </StatusContext.Provider>
   </HelmetProvider>
 );
 

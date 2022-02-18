@@ -1,5 +1,6 @@
 import { createElement } from "react";
 import { Head } from "./lib/head.client";
+import { Status } from "./lib/status.client";
 import { createRouter } from "./lib/router/builder";
 import { routes } from "./routes";
 import { Location } from "history";
@@ -13,6 +14,7 @@ export const App = ({ location }: { location: Location }): JSX.Element => {
   }
   return (
     <>
+      <Status code={404} />
       <Head>
         <title>NotFound</title>
       </Head>

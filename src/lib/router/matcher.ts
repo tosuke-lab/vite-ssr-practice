@@ -16,8 +16,8 @@ export interface Action<TResult extends MatchResult<any, any>> {
   component: React.ComponentType<TResult>;
 }
 
-export type InferProps<TBuilder extends RouteBuilder<MatchResult<any, any>>> =
-  TBuilder extends RouteBuilder<infer TResult> ? TResult : never;
+export type InferProps<TBuilder extends RouteMatcher<MatchResult<any, any>>> =
+  TBuilder extends RouteMatcher<infer TResult> ? TResult : never;
 
 abstract class RouteMatcher<TResult extends MatchResult<any, any>> {
   abstract match(context: RouteContext): TResult | undefined;
@@ -55,7 +55,7 @@ class RouteBuilder<
   }
 }
 
-export { type RouteBuilder };
+export { type RouteBuilder, type RouteMatcher };
 
 class PathMatcher<Path extends string> extends RouteMatcher<
   MatchResult<ParseUrlParams<Path>, unknown>
