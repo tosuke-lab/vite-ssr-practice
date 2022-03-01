@@ -1,4 +1,5 @@
 import "./framework/client/webpack-chunk-loader-polyfill.js";
+import "./style.css";
 import React, {
   useEffect,
   unstable_useCacheRefresh as useCacheRefresh,
